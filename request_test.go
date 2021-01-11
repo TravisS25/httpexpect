@@ -1453,3 +1453,29 @@ func TestRequestErrorConflictMultipart(t *testing.T) {
 	req3.WithFileBytes("a", "a", []byte("a"))
 	req3.chain.assertFailed(t)
 }
+
+func TestRequestWithContextValues(t *testing.T) {
+	factory := DefaultRequestFactory{}
+
+	client := &mockClient{}
+
+	reporter := newMockReporter(t)
+
+	config := Config{
+		RequestFactory: factory,
+		Client:         client,
+		Reporter:       reporter,
+	}
+
+	req1 := NewRequest(config, "METHOD", "url")
+	req1.WithContextValues(nil)
+	req1.chain.assertFailed(t)
+
+	req2 := NewRequest(config, "METHOD", "url")
+	req2.WithContextValues(map[interface{}]interface{}{
+		"user": "user@email.com",
+	})
+	req2.chain.assertOK(t)
+
+	assert.Equal(t, req2.http.Context().Value("user"), "user@email.com")
+}

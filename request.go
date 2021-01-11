@@ -2,6 +2,7 @@ package httpexpect
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -847,6 +848,35 @@ func (r *Request) WithMultipart() *Request {
 		r.multipart = multipart.NewWriter(r.formbuf)
 		r.setBody("WithMultipart", r.formbuf, 0, false)
 	}
+
+	return r
+}
+
+// WithContextValues sets passed argument for request context.
+//
+// Example:
+//  req := NewRequest(config, "PUT", "http://example.com/path")
+//
+//  req.WithContextValues(map[interface{}]interface{}{
+//  	userCtx: "User",
+//  })
+//
+func (r *Request) WithContextValues(ctxVals map[interface{}]interface{}) *Request {
+	if r.chain.failed() {
+		return r
+	}
+	if ctxVals == nil {
+		r.chain.fail("unexpected nil ctxVals in WithContextValues")
+		return r
+	}
+
+	ctx := r.http.Context()
+
+	for k, v := range ctxVals {
+		ctx = context.WithValue(ctx, k, v)
+	}
+
+	r.http = r.http.WithContext(ctx)
 
 	return r
 }
