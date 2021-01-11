@@ -851,6 +851,11 @@ func (r *Request) WithMultipart() *Request {
 	return r
 }
 
+// Raw returns underlying http.Request object.
+func (r *Request) Raw() *http.Request {
+	return r.http
+}
+
 // Expect constructs http.Request, sends it, receives http.Response, and
 // returns a new Response object to inspect received response.
 //
